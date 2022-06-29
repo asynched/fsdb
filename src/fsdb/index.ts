@@ -5,41 +5,35 @@ import { v4 } from 'uuid'
 const kData = Symbol('kData')
 const kDatabase = Symbol('kDatabase')
 
-export type GenericDatabaseType = {
-  [k: string]: any[]
-}
-
-export type DatabaseRecord<T> = { _id: string } & T
-
 type ArrayElement<T> = T extends readonly (infer ElementType)[]
   ? ElementType
   : never
 
-type CollectionRef<T extends GenericDatabaseType, K extends keyof T> = {
+type CollectionRef<T extends FsDB.GenericDatabaseType, K extends keyof T> = {
   [kData]: Array<ArrayElement<T[K]>>
-  [kDatabase]: FileSystemDatabase<T>
+  [kDatabase]: Database<T>
 }
 
-export default class FileSystemDatabase<T extends GenericDatabaseType> {
+export default class Database<T extends FsDB.GenericDatabaseType> {
   public [kData]: T | null
 
   private constructor(private filename: string) {
     this[kData] = null
   }
 
-  static fromRef<T extends GenericDatabaseType>(
+  static fromRef<T extends FsDB.GenericDatabaseType>(
     filename: string,
     ref: T
-  ): FileSystemDatabase<T> {
-    const database = new FileSystemDatabase<T>(filename)
+  ): Database<T> {
+    const database = new Database<T>(filename)
     database[kData] = ref
     return database
   }
 
-  static async fromFile<T extends GenericDatabaseType>(
+  static async fromFile<T extends FsDB.GenericDatabaseType>(
     filename: string
-  ): Promise<FileSystemDatabase<T>> {
-    const database = new FileSystemDatabase<T>(filename)
+  ): Promise<Database<T>> {
+    const database = new Database<T>(filename)
     await database.load()
     return database
   }
@@ -63,8 +57,11 @@ export default class FileSystemDatabase<T extends GenericDatabaseType> {
   }
 }
 
-export const collection = <T extends GenericDatabaseType, K extends keyof T>(
-  database: FileSystemDatabase<T>,
+export const collection = <
+  T extends FsDB.GenericDatabaseType,
+  K extends keyof T
+>(
+  database: Database<T>,
   key: K
 ): CollectionRef<T, K> => {
   if (!database[kData]![key]) {
@@ -78,7 +75,7 @@ export const collection = <T extends GenericDatabaseType, K extends keyof T>(
 }
 
 export const createDoc = async <
-  T extends GenericDatabaseType,
+  T extends FsDB.GenericDatabaseType,
   R extends keyof T
 >(
   collection: CollectionRef<T, R>,
@@ -96,7 +93,7 @@ export const createDoc = async <
 }
 
 export const updateDoc = async <
-  T extends GenericDatabaseType,
+  T extends FsDB.GenericDatabaseType,
   R extends keyof T
 >(
   collection: CollectionRef<T, R>,
@@ -115,7 +112,10 @@ export const updateDoc = async <
   return collection[kData][index]
 }
 
-export const getDoc = async <T extends GenericDatabaseType, R extends keyof T>(
+export const getDoc = async <
+  T extends FsDB.GenericDatabaseType,
+  R extends keyof T
+>(
   collection: CollectionRef<T, R>,
   id: string
 ) => {
@@ -128,14 +128,17 @@ export const getDoc = async <T extends GenericDatabaseType, R extends keyof T>(
   return collection[kData][index]
 }
 
-export const getDocs = async <T extends GenericDatabaseType, R extends keyof T>(
+export const getDocs = async <
+  T extends FsDB.GenericDatabaseType,
+  R extends keyof T
+>(
   collection: CollectionRef<T, R>
 ) => {
   return collection[kData]
 }
 
 export const deleteDoc = async <
-  T extends GenericDatabaseType,
+  T extends FsDB.GenericDatabaseType,
   R extends keyof T
 >(
   collection: CollectionRef<T, R>,

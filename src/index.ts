@@ -1,5 +1,4 @@
-import FileSystemDatabase, { collection, getDocs } from './fsdb'
-import type { DatabaseRecord } from './fsdb'
+import Database, { collection, getDocs } from './fsdb'
 
 type Person = {
   name: string
@@ -7,16 +6,12 @@ type Person = {
 }
 
 type DatabaseType = {
-  people: Array<DatabaseRecord<Person>>
+  people: FsDB.Collection<Person>
 }
 
 const main = async () => {
-  const database = await FileSystemDatabase.fromFile<DatabaseType>(
-    'database.json'
-  )
-
+  const database = await Database.fromFile<DatabaseType>('database.json')
   const people = await getDocs(collection(database, 'people'))
-
   console.log(people)
 }
 
