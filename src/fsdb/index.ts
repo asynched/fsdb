@@ -160,13 +160,21 @@ export const deleteDoc = async <
 export const where = <T extends FsDB.DatabaseRecord<any>>(
   key: keyof T,
   operator: FsDB.Operator,
-  value: string
+  value: any
 ): FsDB.WhereClause<T> => {
   return {
     _meta: 'where',
     key,
     operator,
     value,
+  }
+}
+
+export const limit = (items: number, offset = 0): FsDB.LimitClause => {
+  return {
+    _meta: 'limit',
+    items,
+    offset,
   }
 }
 
@@ -229,6 +237,10 @@ export const query = async <
               throw new Error('Unknown ordering')
           }
         })
+        break
+      }
+      case 'limit': {
+        items = items.slice(clause.offset, clause.offset + clause.items)
       }
     }
   }

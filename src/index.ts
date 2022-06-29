@@ -2,6 +2,7 @@ import Database, {
   collection,
   createDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   where,
@@ -23,8 +24,9 @@ const main = async () => {
   const people = await query(
     peopleRef,
     where('name', 'like', 'Ed'),
-    where('age', '<', '30'),
-    orderBy('age', 'desc')
+    where('age', '<', 30),
+    orderBy('age', 'desc'),
+    limit(5, 2)
   )
 
   console.log(people)

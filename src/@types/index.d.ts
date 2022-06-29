@@ -13,7 +13,7 @@ declare namespace FsDB {
     _meta: 'where'
     key: keyof T
     operator: Operator
-    value: string
+    value: any
   }
 
   export type OrderByClause<T> = {
@@ -22,5 +22,11 @@ declare namespace FsDB {
     ordering: Ordering
   }
 
-  export type Clause<T> = WhereClause<T> | OrderByClause<T>
+  export type LimitClause = {
+    _meta: 'limit'
+    items: number
+    offset: number
+  }
+
+  export type Clause<T> = WhereClause<T> | OrderByClause<T> | LimitClause
 }
