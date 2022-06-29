@@ -9,7 +9,10 @@ type ArrayElement<T> = T extends readonly (infer ElementType)[]
   ? ElementType
   : never
 
-type CollectionRef<T extends FsDB.GenericDatabaseType, K extends keyof T> = {
+export type CollectionRef<
+  T extends FsDB.GenericDatabaseType,
+  K extends keyof T
+> = {
   [kData]: Array<ArrayElement<T[K]>>
   [kDatabase]: Database<T>
 }
@@ -152,4 +155,83 @@ export const deleteDoc = async <
 
   collection[kData].splice(index, 1)
   await collection[kDatabase].save()
+}
+
+export const where = <T extends FsDB.DatabaseRecord<any>>(
+  key: keyof T,
+  operator: FsDB.Operator,
+  value: string
+): FsDB.WhereClause<T> => {
+  return {
+    _meta: 'where',
+    key,
+    operator,
+    value,
+  }
+}
+
+export const orderBy = <T extends FsDB.DatabaseRecord<any>>(
+  key: keyof T,
+  ordering: FsDB.Ordering
+): FsDB.OrderByClause<T> => {
+  return {
+    _meta: 'orderBy',
+    key,
+    ordering,
+  }
+}
+
+export const query = async <
+  T extends FsDB.GenericDatabaseType,
+  R extends keyof T
+>(
+  collection: CollectionRef<T, R>,
+  ...clauses: FsDB.Clause<ArrayElement<T[R]>>[]
+) => {
+  let items = collection[kData]
+
+  for (const clause of clauses) {
+    switch (clause._meta) {
+      case 'where': {
+        items = items.filter((item) => {
+          const value = item[clause.key]
+          switch (clause.operator) {
+            case '==':
+              return value === clause.value
+            case '!=':
+              return value !== clause.value
+            case '>':
+              return value > clause.value
+            case '>=':
+              return value >= clause.value
+            case '<':
+              return value < clause.value
+            case '<=':
+              return value <= clause.value
+            case 'like':
+              return value.includes?.(clause.value)
+            default:
+              throw new Error('Unknown operator')
+          }
+        })
+        break
+      }
+      case 'orderBy': {
+        items = items.sort((a, b) => {
+          const aValue = a[clause.key]
+          const bValue = b[clause.key]
+          switch (clause.ordering) {
+            case 'asc':
+              return aValue > bValue ? 1 : -1
+            case 'desc':
+              return aValue < bValue ? 1 : -1
+            default:
+              throw new Error('Unknown ordering')
+          }
+        })
+      }
+    }
+  }
+
+  return items
 }
