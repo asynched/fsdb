@@ -189,10 +189,7 @@ export const orderBy = <T extends FsDB.DatabaseRecord<any>>(
   }
 }
 
-export const query = async <
-  T extends FsDB.GenericDatabaseType,
-  R extends keyof T
->(
+export const query = <T extends FsDB.GenericDatabaseType, R extends keyof T>(
   collection: CollectionRef<T, R>,
   ...clauses: FsDB.Clause<ArrayElement<T[R]>>[]
 ) => {

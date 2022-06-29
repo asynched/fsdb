@@ -21,7 +21,7 @@ const main = async () => {
   const database = await Database.fromFile<DatabaseType>('database.json')
   const peopleRef = collection(database, 'people')
 
-  const people = await query(
+  const people = query(
     peopleRef,
     where('name', 'like', 'Ed'),
     where('age', '<', 30),
